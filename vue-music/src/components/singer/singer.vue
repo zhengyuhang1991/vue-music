@@ -1,10 +1,11 @@
 <template>
-  <div>
-    <cube-index-list></cube-index-list>
+  <div class="singer">
+    <list-view :data="singers"></list-view>
   </div>
 </template>
 
 <script type="text/ecmascript-6">
+  import ListView from 'base/listview/listview'
   import Singer from 'common/js/singer'
   import {getSingerList} from 'api/singer'
   import {ERR_OK} from 'api/config'
@@ -26,8 +27,7 @@
       _getDiscList() {
         getSingerList().then((res) => {
           if (res.code === ERR_OK) {
-            this.singers = res.data.list
-            this._normalizeSinger(this.singers)
+            this.singers = this._normalizeSinger(res.data.list)
           }
         })
       },
@@ -39,10 +39,10 @@
           }
         }
         list.forEach((item, index) => {
-          if (index <= HOT_SINGER_LEN) {
+          if (index < HOT_SINGER_LEN) {
             map.hot.items.push(new Singer({
-              id: item.Fsinger_mid,
-              name: item.Fsinger_name
+              name: item.Fsinger_name,
+              id: item.Fsinger_mid
             }))
           }
           let key = item.Findex
@@ -53,8 +53,8 @@
             }
           }
           map[key].items.push(new Singer({
-            id: item.Fsinger_mid,
-            name: item.Fsinger_name
+            name: item.Fsinger_name,
+            id: item.Fsinger_mid
           }))
         })
         // 序列化数组，返回最终想要的有序数组
@@ -73,6 +73,9 @@
         })
         return hot.concat(ret)
       }
+    },
+    components: {
+      ListView
     }
   }
 </script>
@@ -81,4 +84,26 @@
   @import "~common/stylus/variable"
   @import "~common/stylus/mixin"
 
+  .singer
+    position: fixed
+    top: 88px
+    bottom: 0
+    width: 100%
+    .cube-index-list-anchor
+      padding: 8px 0 8px 20px
+    .list-group
+      padding-bottom: 30px
+      .list-group-item
+        display: flex
+        align-items: center
+        padding: 20px 0 0 30px
+        background: $color-background
+        .avatar
+          width: 50px
+          height: 50px
+          border-radius: 50%
+        .name
+          margin-left: 20px
+          color: $color-text-l
+          font-size: $font-size-medium
 </style>

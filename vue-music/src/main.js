@@ -6,17 +6,12 @@ import router from './router'
 import VueLazyload from 'vue-lazyload'
 import {
   /* eslint-disable no-unused-vars */
-  Style,
-  Slide,
-  Scroll,
-  IndexList
+  Scroll
 } from 'cube-ui'
 
 import 'common/stylus/index.styl'
 
-Vue.use(Slide)
 Vue.use(Scroll)
-Vue.use(IndexList)
 
 Vue.use(VueLazyload, {
   loading: require('common/image/default.png')
