@@ -21,6 +21,10 @@
       data: {
         type: Array,
         default: null
+      },
+      listerScroll: {
+        type: Boolean,
+        default: false
       }
     },
     mounted() {
@@ -51,6 +55,11 @@
         this.scroll = new Scroll.BScroll(this.$refs.wrapper, {
           probeType: this.probeType
         })
+        if (this.listerScroll) {
+          this.scroll.on('scroll', (pos) => {
+            this.$emit('scroll', pos)
+          })
+        }
       }
     },
     watch: {
