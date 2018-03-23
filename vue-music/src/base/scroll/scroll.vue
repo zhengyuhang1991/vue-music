@@ -53,6 +53,7 @@
           return
         }
         this.scroll = new Scroll.BScroll(this.$refs.wrapper, {
+          click: true,
           probeType: this.probeType
         })
         if (this.listerScroll) {

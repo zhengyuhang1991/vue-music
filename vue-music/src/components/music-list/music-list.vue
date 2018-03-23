@@ -8,6 +8,12 @@
          :style="bgStyle"
          ref="bgImage"
     >
+      <div class="play-wrapper">
+        <div class="play" v-show="songs.length > 0" ref="playBtn">
+          <i class="icon-play"></i>
+          <span class="text">随机播放全部</span>
+        </div>
+      </div>
       <div class="filter"></div>
     </div>
     <div class="bg-layer" ref="layer"></div>
@@ -20,7 +26,11 @@
     >
       <div class="song-list-wrapper">
         <song-list :songs="songs"
+                   @select="selectItem"
         ></song-list>
+      </div>
+      <div class="loading-container" v-show="!songs.length">
+        <loading></loading>
       </div>
     </scroll>
   </div>
@@ -29,8 +39,12 @@
 <script type="text/ecmascript-6">
   import Scroll from 'base/scroll/scroll'
   import SongList from 'base/song-list/song-list'
+  import Loading from 'base/loading/loading'
+  import {prefixStyle} from 'common/js/dom'
+  import {mapActions} from 'vuex'
 
   const RESERVED_HEIGHT = 40
+  const transform = prefixStyle('transform')
 
   export default {
     name: `music-list`,
@@ -50,7 +64,8 @@
     },
     components: {
       SongList,
-      Scroll
+      Scroll,
+      Loading
     },
     data() {
       return {
@@ -74,8 +89,28 @@
     watch: {
       scrollY(newY) {
         let translateY = Math.max(newY, this.minTransalteY)
-        this.$refs.layer.style['transform'] = `translate3d(0, ${translateY}px, 0)`
-        this.$refs.layer.style['webkitTransform'] = `translate3d(0, ${translateY}px, 0)`
+        let zIndex = 0
+        let scale = 1
+        this.$refs.layer.style[transform] = `translate3d(0, ${translateY}px, 0)`
+
+        const percent = Math.abs(newY / this.imgHeight)
+        if (newY > 0) {
+          zIndex = 10
+          scale = 1 + percent
+        }
+        this.$refs.bgImage.style[transform] = `scale(${scale})`
+
+        if (newY < this.minTransalteY) {
+          zIndex = 10
+          this.$refs.bgImage.style.paddingTop = 0
+          this.$refs.bgImage.style.height = `${RESERVED_HEIGHT}px`
+          this.$refs.playBtn.style.display = 'none'
+        } else {
+          this.$refs.bgImage.style.paddingTop = `70%`
+          this.$refs.bgImage.style.height = 0
+          this.$refs.playBtn.style.display = ''
+        }
+        this.$refs.bgImage.style.zIndex = zIndex
       }
     },
     methods: {
@@ -84,7 +119,17 @@
       },
       scroll(pos) {
         this.scrollY = pos.y
-      }
+      },
+      selectItem(item, index) {
+        this.selectPlay({
+          list: this.songs,
+          index
+        })
+        console.log(this.songs[index])
+      },
+      ...mapActions([
+        'selectPlay'
+      ])
     }
   }
 </script>

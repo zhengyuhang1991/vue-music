@@ -40,7 +40,6 @@
     },
     methods: {
       _getDetail() {
-        console.log(this.singer)
         // 如未获取歌手ID时刷新，则返回上一界面
         if (!this.singer.id) {
           this.$router.push('/singer')
