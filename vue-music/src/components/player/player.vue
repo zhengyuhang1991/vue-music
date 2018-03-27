@@ -59,7 +59,10 @@
               <i class="icon-prev"></i>
             </div>
             <div class="icon i-center">
-              <i class="needsclick"></i>
+              <i class="needsclick"
+                 :class="playIcon"
+                 @click="togglePlaying"
+              ></i>
             </div>
             <div class="icon i-right">
               <i class="icon-next"></i>
@@ -92,6 +95,7 @@
         </div>
       </div>
     </transition>
+    <audio :src="currentSong.url" ref="audio"></audio>
   </div>
 </template>
 
@@ -109,11 +113,28 @@
       Scroll
     },
     computed: {
+      playIcon() {
+        return this.playing ? 'icon-pause' : 'icon-play'
+      },
       ...mapGetters([
         'fullScreen',
         'playlist',
-        'currentSong'
+        'currentSong',
+        'playing'
       ])
+    },
+    watch: {
+      currentSong() {
+        this.$nextTick(() => {
+          this.$refs.audio.play()
+        })
+      },
+      playing(newPlaying) {
+        const audio = this.$refs.audio
+        this.$nextTick(() => {
+          newPlaying ? audio.play() : audio.pause()
+        })
+      }
     },
     methods: {
       back() {
@@ -122,9 +143,11 @@
       open() {
         this.setFullScreen(true)
       },
+      togglePlaying() {
+        this.setPlayingState(!this.playing)
+      },
       enter(el, done) {
         const {x, y, scale} = this._getPosAndScale()
-        console.log({x, y, scale})
 
         let animation = {
           0: {
@@ -177,7 +200,8 @@
         }
       },
       ...mapMutations({
-        setFullScreen: 'SET_FULL_SCREEN'
+        setFullScreen: 'SET_FULL_SCREEN',
+        setPlayingState: 'SET_PLAYING_STATE'
       })
     }
   }
