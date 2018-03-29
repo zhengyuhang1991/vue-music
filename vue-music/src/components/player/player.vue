@@ -21,7 +21,9 @@
           <div class="middle-l">
             <div class="cd-wrapper" ref="cdWrapper">
               <div class="cd">
-                <img class="image" :src="currentSong.image">
+                <img class="image"
+                     :class="cdCls"
+                     :src="currentSong.image">
               </div>
             </div>
             <div class="playing-lyric-wrapper">
@@ -56,7 +58,7 @@
               <i></i>
             </div>
             <div class="icon i-left">
-              <i class="icon-prev"></i>
+              <i class="icon-prev" @click="prev"></i>
             </div>
             <div class="icon i-center">
               <i class="needsclick"
@@ -65,7 +67,7 @@
               ></i>
             </div>
             <div class="icon i-right">
-              <i class="icon-next"></i>
+              <i class="icon-next" @click="next"></i>
             </div>
             <div class="icon i-right">
               <i class="icon"></i>
@@ -78,7 +80,8 @@
       <div class="mini-player" v-show="!fullScreen" @click="open">
         <div class="icon">
           <div class="imgWrapper">
-            <img :src="currentSong.image">
+            <img :class="cdCls"
+                 :src="currentSong.image">
           </div>
         </div>
         <div class="text">
@@ -86,16 +89,19 @@
           <p class="desc" v-html="currentSong.singer"></p>
         </div>
         <div class="control">
-          <!--<progress-circle :radius="radius" :percent="percent">
-            <i @click.stop="togglePlaying" class="icon-mini" :class="miniIcon"></i>
-          </progress-circle>-->
+          <i @click.stop="togglePlaying" class="icon-mini" :class="miniIcon"></i>
         </div>
         <div class="control">
           <i class="icon-playlist"></i>
         </div>
       </div>
     </transition>
-    <audio :src="currentSong.url" ref="audio"></audio>
+    <audio :src="currentSong.url"
+           ref="audio"
+           @canplay="ready"
+           @error="error"
+           @timeupdate="updateTime"
+    ></audio>
   </div>
 </template>
 
@@ -109,18 +115,31 @@
 
   export default {
     name: `player`,
+    data() {
+      return {
+        songReady: false,
+        currentTime: 0
+      }
+    },
     components: {
       Scroll
     },
     computed: {
+      cdCls() {
+        return this.playing ? 'play' : 'play pause'
+      },
       playIcon() {
         return this.playing ? 'icon-pause' : 'icon-play'
+      },
+      miniIcon() {
+        return this.playing ? 'icon-pause-mini' : 'icon-play-mini'
       },
       ...mapGetters([
         'fullScreen',
         'playlist',
         'currentSong',
-        'playing'
+        'playing',
+        'currentIndex'
       ])
     },
     watch: {
@@ -137,6 +156,44 @@
       }
     },
     methods: {
+      ready() {
+        this.songReady = true
+      },
+      error() {
+      },
+      updateTime(e) {
+        this.currentTime = e.target.currentTime
+      },
+      prev() {
+        if (!this.songReady) {
+          return
+        }
+        let index = this.currentIndex - 1
+        if (index === -1) {
+          index = this.playlist.length - 1
+        }
+        this.setCurrentIndex(index)
+
+        if (!this.playing) {
+          this.togglePlaying()
+        }
+        this.songReady = false
+      },
+      next() {
+        if (!this.songReady) {
+          return
+        }
+        let index = this.currentIndex + 1
+        if (index === this.playlist.length) {
+          index = 0
+        }
+        this.setCurrentIndex(index)
+
+        if (!this.playing) {
+          this.togglePlaying()
+        }
+        this.songReady = false
+      },
       back() {
         this.setFullScreen(false)
       },
@@ -201,7 +258,8 @@
       },
       ...mapMutations({
         setFullScreen: 'SET_FULL_SCREEN',
-        setPlayingState: 'SET_PLAYING_STATE'
+        setPlayingState: 'SET_PLAYING_STATE',
+        setCurrentIndex: 'SET_CURRENT_INDEX'
       })
     }
   }
@@ -292,6 +350,8 @@
                 border: 10px solid rgba(255, 255, 255, 0.1)
               .play
                 animation: rotate 20s linear infinite
+              .pause
+                animation-play-state: paused
           .playing-lyric-wrapper
             width: 80%
             margin: 30px auto 0 auto
