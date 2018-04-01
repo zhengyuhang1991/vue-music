@@ -16,7 +16,7 @@
       },
       click: {
         type: Boolean,
-        default: false
+        default: true
       },
       data: {
         type: Array,
@@ -53,7 +53,7 @@
           return
         }
         this.scroll = new Scroll.BScroll(this.$refs.wrapper, {
-          click: true,
+          click: this.click,
           probeType: this.probeType
         })
         if (this.listerScroll) {
